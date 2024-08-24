@@ -13,6 +13,6 @@ Clone this repository and open the resulting folder with Android Studio. Then co
 This worked on an Ubuntu 22.04 laptop on which **git** and **Android Studio 2024.1.1** where installed:
 ```
 cd ~/Desktop
-git clone http://github.com/aubreymoore/CRB-damage-app CRB-damage-app-test
-android-studio CRB-damage-app-test
+git clone http://github.com/aubreymoore/CRB-damage-app
+android-studio CRB-damage-app
 ``` 
