@@ -41,7 +41,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         textPaint.style = Paint.Style.FILL
         textPaint.textSize = 50f
 
-        boxPaint.color = ContextCompat.getColor(context!!, R.color.bounding_box_color)
+        //boxPaint.color = ContextCompat.getColor(context!!, R.color.bounding_box_color)
         boxPaint.strokeWidth = 8F
         boxPaint.style = Paint.Style.STROKE
     }
@@ -54,6 +54,12 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
             val top = it.y1 * height
             val right = it.x2 * width
             val bottom = it.y2 * height
+            
+            when(it.clsName) {
+                "live" -> boxPaint.color = Color.GREEN
+                "dead" -> boxPaint.color = Color.BLACK
+                "vcut" -> boxPaint.color = Color.RED
+            }
 
             canvas.drawRect(left, top, right, bottom, boxPaint)
             val drawableText = it.clsName
