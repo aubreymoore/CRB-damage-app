@@ -50,6 +50,10 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
         super.draw(canvas)
 
         results.forEach {
+
+            // Disable bounding box overlay if confidence is greater than threshold.
+            if (it.cnf < confidence_threshold) return@forEach
+
             val left = it.x1 * width
             val top = it.y1 * height
             val right = it.x2 * width
@@ -62,20 +66,24 @@ class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs
             }
 
             canvas.drawRect(left, top, right, bottom, boxPaint)
-            val drawableText = it.clsName
 
-            textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
-            val textWidth = bounds.width()
-            val textHeight = bounds.height()
-            canvas.drawRect(
-                left,
-                top,
-                left + textWidth + BOUNDING_RECT_TEXT_PADDING,
-                top + textHeight + BOUNDING_RECT_TEXT_PADDING,
-                textBackgroundPaint
-            )
-            canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
+            // If show_conf is true, display confidence value in bounding box
+            if (show_conf) {
+                val drawableText = String.format("%.2f", it.cnf)
 
+
+                textBackgroundPaint.getTextBounds(drawableText, 0, drawableText.length, bounds)
+                val textWidth = bounds.width()
+                val textHeight = bounds.height()
+                canvas.drawRect(
+                    left,
+                    top,
+                    left + textWidth + BOUNDING_RECT_TEXT_PADDING,
+                    top + textHeight + BOUNDING_RECT_TEXT_PADDING,
+                    textBackgroundPaint
+                )
+                canvas.drawText(drawableText, left, top + bounds.height(), textPaint)
+            }
         }
     }
 

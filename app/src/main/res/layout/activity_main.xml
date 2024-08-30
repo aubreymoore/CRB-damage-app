@@ -45,30 +45,103 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="80dp"
         android:background="@color/white"
         android:paddingVertical="4dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <ToggleButton
-            android:id="@+id/isGpu"
-            android:background="@color/orange"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/btnDetectLive"
+            android:textSize="12dp"
             android:textColor="@color/white"
-            android:textOff="@string/gpu"
-            android:textOn="@string/gpu"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:textAllCaps="false"
+            android:checked="true"
+            android:background="@color/green"
+            android:layout_width="55dp"
+            android:layout_height="fill_parent"
+            android:textOff="LIVE\ndetector\nOFF"
+            android:textOn="LIVE\ndetector\nON"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5" />
+            app:layout_constraintTop_toTopOf="parent" />
 
+        <ToggleButton
+            android:id="@+id/btnDetectDead"
+            android:textSize="12dp"
+            android:textAllCaps="false"
+            android:checked="true"
+            android:background="@color/black"
+            android:textColor="@color/white"
+            android:layout_width="55dp"
+            android:layout_height="fill_parent"
+            android:textOff="DEAD\ndetector\nOFF"
+            android:textOn="DEAD\ndetector\nON"
+            app:layout_constraintStart_toEndOf="@id/btnDetectLive"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ToggleButton
+            android:id="@+id/btnDetectVcut"
+            android:textSize="12dp"
+            android:textAllCaps="false"
+            android:checked="true"
+            android:background="@color/red"
+            android:textColor="@color/white"
+            android:layout_width="55dp"
+            android:layout_height="fill_parent"
+            android:textOff="VCUT\ndetector\nOFF"
+            android:textOn="VCUT\ndetector\nON"
+            app:layout_constraintStart_toEndOf="@id/btnDetectDead"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/btnDecrement"
+            android:src="@drawable/baseline_arrow_downward_24"
+            android:background="@color/white"
+            android:layout_width="30dp"
+            android:layout_height="fill_parent"
+            app:layout_constraintStart_toEndOf="@id/btnDetectVcut" />
+
+        <TextView
+            android:id="@+id/tvConfidence"
+            android:textSize="12dp"
+            android:gravity="center"
+            android:text="Confidence\nthreshold\n0.50"
+            android:textColor="@color/black"
+            android:layout_width="75dp"
+            android:layout_height="fill_parent"
+            app:layout_constraintStart_toEndOf="@id/btnDecrement"/>
+
+        <ImageButton
+            android:id="@+id/btnIncrement"
+            android:src="@drawable/baseline_arrow_upward_24"
+            android:background="@color/white"
+            android:layout_width="30dp"
+            android:layout_height="fill_parent"
+            app:layout_constraintStart_toEndOf="@id/tvConfidence" />
+
+        <ToggleButton
+            android:id="@+id/btnShowConf"
+            android:checked="true"
+            android:textSize="12dp"
+            android:textAllCaps="false"
+            android:background="@color/black"
+            android:textColor="@color/white"
+            android:layout_width="55dp"
+            android:layout_height="fill_parent"
+            android:textOff="Show\nCONF\nOFF"
+            android:textOn="Show\nCONF\nON"
+            app:layout_constraintStart_toEndOf="@id/btnIncrement" />
+
+        <ToggleButton
+            android:id="@+id/isGpu"
+            android:textSize="12dp"
+            android:layout_width="55dp"
+            android:layout_height="fill_parent"
+            android:background="@color/orange"
+            android:textColor="@color/white"
+            android:textOff="GPU\nOFF"
+            android:textOn="GPU\nON"
+            app:layout_constraintStart_toEndOf="@id/btnShowConf" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-<!--    <ImageView-->
-<!--        android:id="@+id/ivTop"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"/>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

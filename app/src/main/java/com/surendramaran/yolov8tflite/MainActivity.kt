@@ -25,7 +25,14 @@ import yolov8tflite.databinding.ActivityMainBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+var liveDetectorEnabled = true
+var deadDetectorEnabled = true
+var vcutDetectorEnabled = true
+var confidence_threshold:Double = 0.5
+var show_conf = true
+
 class MainActivity : AppCompatActivity(), Detector.DetectorListener {
+
     private lateinit var binding: ActivityMainBinding
     private val isFrontCamera = false
 
@@ -39,6 +46,7 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -72,7 +80,75 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
                 }
             }
         }
+
+        binding.apply {
+            btnDetectLive.setOnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.green))
+                    liveDetectorEnabled = true
+                } else {
+                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
+                    liveDetectorEnabled = false
+                }
+            }
+        }
+
+        binding.apply {
+            btnDetectDead.setOnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.black))
+                    deadDetectorEnabled = true
+                } else {
+                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
+                    deadDetectorEnabled = false
+                }
+            }
+        }
+
+        binding.apply {
+            btnDetectVcut.setOnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.red))
+                    vcutDetectorEnabled = true
+                } else {
+                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
+                    vcutDetectorEnabled = false
+                }
+            }
+        }
+
+        binding.apply {
+            btnDecrement.setOnClickListener {
+                if (confidence_threshold > 0.05) {
+                    confidence_threshold = confidence_threshold - 0.05
+                    tvConfidence.text = "Confidence\nthreshold\n" + String.format("%.2f", confidence_threshold)
+                }
+            }
+        }
+
+        binding.apply {
+            btnIncrement.setOnClickListener {
+                if (confidence_threshold < 1.0) {
+                    confidence_threshold = confidence_threshold + 0.05
+                    tvConfidence.text = "Confidence\nthreshold\n" + String.format("%.2f", confidence_threshold)
+                }
+            }
+        }
+
+        binding.apply {
+            btnShowConf.setOnCheckedChangeListener { buttonView, isChecked ->
+                if (isChecked) {
+                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.black))
+                    show_conf = true
+                } else {
+                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
+                    show_conf = false
+                }
+            }
+        }
+
     }
+
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)

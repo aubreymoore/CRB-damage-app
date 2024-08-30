@@ -145,13 +145,14 @@ class Detector(
         val boundingBoxes = mutableListOf<BoundingBox>()
 
         for (c in 0 until numElements) {
+
             var maxConf = CONFIDENCE_THRESHOLD
             var maxIdx = -1
             var j = 4
             var arrayIdx = c + numElements * j
             while (j < numChannel){
                 if (array[arrayIdx] > maxConf) {
-                    maxConf = array[arrayIdx]
+                    maxConf = array[arrayIdx].toDouble()
                     maxIdx = j - 4
                 }
                 j++
@@ -168,16 +169,23 @@ class Detector(
                 val y1 = cy - (h/2F)
                 val x2 = cx + (w/2F)
                 val y2 = cy + (h/2F)
+
+                // conditions where bounding boxes are not added
+
                 if (x1 < 0F || x1 > 1F) continue
                 if (y1 < 0F || y1 > 1F) continue
                 if (x2 < 0F || x2 > 1F) continue
                 if (y2 < 0F || y2 > 1F) continue
 
+                if (clsName == "live" && !liveDetectorEnabled) continue
+                if (clsName == "dead" && !deadDetectorEnabled) continue
+                if (clsName == "vcut" && !vcutDetectorEnabled) continue
+
                 boundingBoxes.add(
                     BoundingBox(
                         x1 = x1, y1 = y1, x2 = x2, y2 = y2,
                         cx = cx, cy = cy, w = w, h = h,
-                        cnf = maxConf, cls = maxIdx, clsName = clsName
+                        cnf = maxConf.toFloat(), cls = maxIdx, clsName = clsName
                     )
                 )
             }
@@ -231,7 +239,12 @@ class Detector(
         private const val INPUT_STANDARD_DEVIATION = 255f
         private val INPUT_IMAGE_TYPE = DataType.FLOAT32
         private val OUTPUT_IMAGE_TYPE = DataType.FLOAT32
-        private const val CONFIDENCE_THRESHOLD = 0.3F
+        //private const val CONFIDENCE_THRESHOLD = 0.3F
+        //TODO "CONFIDENCE_THRESHOLD = confidence_threshold" is bad code which should be fixed.
+        //The confidence_threshold variable is defined in MainActivity.kt and has global scope.
+        //It can be changed on the fly by the user.
+        //CONFIDENCE_THRESHOLD is a fixed value private to Class detector in Detector.kt.
+        private val CONFIDENCE_THRESHOLD = confidence_threshold
         private const val IOU_THRESHOLD = 0.5F
     }
 }
