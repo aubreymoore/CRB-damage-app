@@ -1,4 +1,4 @@
-package com.surendramaran.yolov8tflite
+package com.aubreymoore.crb_damage
 
 import android.content.Context
 import android.graphics.Canvas
@@ -7,8 +7,6 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.View
-import androidx.core.content.ContextCompat
-import yolov8tflite.R
 
 class OverlayView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 

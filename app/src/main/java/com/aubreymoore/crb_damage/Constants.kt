@@ -1,4 +1,4 @@
-package com.surendramaran.yolov8tflite
+package com.aubreymoore.crb_damage
 
 object Constants {
     const val MODEL_PATH = "run5_model.tflite"

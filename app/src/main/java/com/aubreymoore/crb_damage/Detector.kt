@@ -1,10 +1,10 @@
-package com.surendramaran.yolov8tflite
+package com.aubreymoore.crb_damage
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.SystemClock
-import com.surendramaran.yolov8tflite.MetaData.extractNamesFromLabelFile
-import com.surendramaran.yolov8tflite.MetaData.extractNamesFromMetadata
+import com.aubreymoore.crb_damage.MetaData.extractNamesFromLabelFile
+import com.aubreymoore.crb_damage.MetaData.extractNamesFromMetadata
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.gpu.CompatibilityList

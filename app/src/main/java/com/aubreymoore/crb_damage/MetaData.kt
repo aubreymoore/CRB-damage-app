@@ -1,4 +1,4 @@
-package com.surendramaran.yolov8tflite
+package com.aubreymoore.crb_damage
 
 import android.content.Context
 import org.tensorflow.lite.support.metadata.MetadataExtractor

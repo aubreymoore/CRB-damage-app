@@ -7,43 +7,57 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/black"
+        android:paddingVertical="4dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:text="CRB Damage Detection Demo"
+            android:textColor="@color/white"
+            android:textAlignment="center"
+            android:textSize="30dp" />
+
+        <TextView
+            android:id="@+id/inferenceTime"
+            android:text="inference time: 100ms"
+            android:layout_width="match_parent"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_height="wrap_content" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.camera.view.PreviewView
         android:id="@+id/view_finder"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_bar"
+        app:layout_constraintBottom_toTopOf="@id/bottom_bar"
         app:layout_constraintDimensionRatio="3:4"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5"
-        app:scaleType="fillStart" />
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <com.surendramaran.yolov8tflite.OverlayView
+    <com.aubreymoore.crb_damage.OverlayView
         android:id="@+id/overlay"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:translationZ="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_bar"
+        app:layout_constraintBottom_toTopOf="@id/bottom_bar"
         app:layout_constraintDimensionRatio="3:4"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
-
-    <TextView
-        tools:text="100ms"
-        android:textColor="@color/white"
-        android:id="@+id/inferenceTime"
-        android:layout_margin="32dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:background="@color/white"
@@ -52,94 +66,95 @@
 
         <ToggleButton
             android:id="@+id/btnDetectLive"
-            android:textSize="12dp"
-            android:textColor="@color/white"
-            android:textAllCaps="false"
-            android:checked="true"
-            android:background="@color/green"
             android:layout_width="55dp"
             android:layout_height="fill_parent"
+            android:background="@color/green"
+            android:checked="true"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
             android:textOff="LIVE\ndetector\nOFF"
             android:textOn="LIVE\ndetector\nON"
+            android:textSize="12dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ToggleButton
             android:id="@+id/btnDetectDead"
-            android:textSize="12dp"
-            android:textAllCaps="false"
-            android:checked="true"
-            android:background="@color/black"
-            android:textColor="@color/white"
             android:layout_width="55dp"
             android:layout_height="fill_parent"
+            android:background="@color/black"
+            android:checked="true"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
             android:textOff="DEAD\ndetector\nOFF"
             android:textOn="DEAD\ndetector\nON"
+            android:textSize="12dp"
             app:layout_constraintStart_toEndOf="@id/btnDetectLive"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ToggleButton
             android:id="@+id/btnDetectVcut"
-            android:textSize="12dp"
-            android:textAllCaps="false"
-            android:checked="true"
-            android:background="@color/red"
-            android:textColor="@color/white"
             android:layout_width="55dp"
             android:layout_height="fill_parent"
+            android:background="@color/red"
+            android:checked="true"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
             android:textOff="VCUT\ndetector\nOFF"
             android:textOn="VCUT\ndetector\nON"
+            android:textSize="12dp"
             app:layout_constraintStart_toEndOf="@id/btnDetectDead"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
             android:id="@+id/btnDecrement"
-            android:src="@drawable/baseline_arrow_downward_24"
-            android:background="@color/white"
             android:layout_width="30dp"
             android:layout_height="fill_parent"
-            app:layout_constraintStart_toEndOf="@id/btnDetectVcut" />
+            android:background="@color/white"
+            android:src="@drawable/baseline_arrow_downward_24"
+            app:layout_constraintStart_toEndOf="@id/btnDetectVcut"
+            tools:ignore="MissingConstraints" />
 
         <TextView
             android:id="@+id/tvConfidence"
-            android:textSize="12dp"
+            android:layout_width="75dp"
+            android:layout_height="fill_parent"
             android:gravity="center"
             android:text="Confidence\nthreshold\n0.50"
             android:textColor="@color/black"
-            android:layout_width="75dp"
-            android:layout_height="fill_parent"
-            app:layout_constraintStart_toEndOf="@id/btnDecrement"/>
+            android:textSize="12dp"
+            app:layout_constraintStart_toEndOf="@id/btnDecrement" />
 
         <ImageButton
             android:id="@+id/btnIncrement"
-            android:src="@drawable/baseline_arrow_upward_24"
-            android:background="@color/white"
             android:layout_width="30dp"
             android:layout_height="fill_parent"
+            android:background="@color/white"
+            android:src="@drawable/baseline_arrow_upward_24"
             app:layout_constraintStart_toEndOf="@id/tvConfidence" />
 
         <ToggleButton
             android:id="@+id/btnShowConf"
-            android:checked="true"
-            android:textSize="12dp"
-            android:textAllCaps="false"
-            android:background="@color/black"
-            android:textColor="@color/white"
             android:layout_width="55dp"
             android:layout_height="fill_parent"
+            android:background="@color/black"
+            android:checked="true"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
             android:textOff="Show\nCONF\nOFF"
             android:textOn="Show\nCONF\nON"
+            android:textSize="12dp"
             app:layout_constraintStart_toEndOf="@id/btnIncrement" />
 
         <ToggleButton
             android:id="@+id/isGpu"
-            android:textSize="12dp"
             android:layout_width="55dp"
             android:layout_height="fill_parent"
             android:background="@color/orange"
             android:textColor="@color/white"
             android:textOff="GPU\nOFF"
             android:textOn="GPU\nON"
+            android:textSize="12dp"
             app:layout_constraintStart_toEndOf="@id/btnShowConf" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

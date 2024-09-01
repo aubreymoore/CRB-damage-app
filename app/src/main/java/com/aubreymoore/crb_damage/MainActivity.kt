@@ -1,11 +1,10 @@
-package com.surendramaran.yolov8tflite
+package com.aubreymoore.crb_damage
 
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.os.Bundle
-import android.os.Message
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,10 +17,10 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.surendramaran.yolov8tflite.Constants.LABELS_PATH
-import com.surendramaran.yolov8tflite.Constants.MODEL_PATH
-import yolov8tflite.R
-import yolov8tflite.databinding.ActivityMainBinding
+import com.aubreymoore.crb_damage.Constants.LABELS_PATH
+import com.aubreymoore.crb_damage.Constants.MODEL_PATH
+import crb_damage.R
+import crb_damage.databinding.ActivityMainBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -273,7 +272,7 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
 
     override fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long) {
         runOnUiThread {
-            binding.inferenceTime.text = "${inferenceTime}ms"
+            binding.inferenceTime.text = "inference time: ${inferenceTime}ms"
             binding.overlay.apply {
                 setResults(boundingBoxes)
                 invalidate()
