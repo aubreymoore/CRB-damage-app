@@ -27,8 +27,10 @@ import java.util.concurrent.Executors
 var liveDetectorEnabled = true
 var deadDetectorEnabled = true
 var vcutDetectorEnabled = true
-var confidence_threshold:Double = 0.5
+var confidence_threshold: Double = 0.5
 var show_conf = true
+
+private const val LOG_INTERVAL_MS = 3000L
 
 class MainActivity : AppCompatActivity(), Detector.DetectorListener {
 
@@ -42,6 +44,13 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
     private var detector: Detector? = null
 
     private lateinit var cameraExecutor: ExecutorService
+
+    private lateinit var locationHelper: LocationHelper
+    private lateinit var detectionLogger: DetectionLogger
+    private var lastLogTime = 0L
+
+    @Volatile
+    private var lastBitmap: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,8 +66,12 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
             }
         }
 
+        locationHelper = LocationHelper(this)
+        detectionLogger = DetectionLogger(this)
+
         if (allPermissionsGranted()) {
             startCamera()
+            locationHelper.startLocationUpdates()
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
@@ -69,57 +82,48 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
     private fun bindListeners() {
         binding.apply {
             isGpu.setOnCheckedChangeListener { buttonView, isChecked ->
-                cameraExecutor.submit {
-                    detector?.restart(isGpu = isChecked)
-                }
-                if (isChecked) {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.orange))
-                } else {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
-                }
+                cameraExecutor.submit { detector?.restart(isGpu = isChecked) }
+                buttonView.setBackgroundColor(
+                    if (isChecked) ContextCompat.getColor(baseContext, R.color.orange)
+                    else ContextCompat.getColor(baseContext, R.color.gray)
+                )
             }
         }
 
         binding.apply {
             btnDetectLive.setOnCheckedChangeListener { buttonView, isChecked ->
-                if (isChecked) {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.green))
-                    liveDetectorEnabled = true
-                } else {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
-                    liveDetectorEnabled = false
-                }
+                liveDetectorEnabled = isChecked
+                buttonView.setBackgroundColor(
+                    if (isChecked) ContextCompat.getColor(baseContext, R.color.green)
+                    else ContextCompat.getColor(baseContext, R.color.gray)
+                )
             }
         }
 
         binding.apply {
             btnDetectDead.setOnCheckedChangeListener { buttonView, isChecked ->
-                if (isChecked) {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.black))
-                    deadDetectorEnabled = true
-                } else {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
-                    deadDetectorEnabled = false
-                }
+                deadDetectorEnabled = isChecked
+                buttonView.setBackgroundColor(
+                    if (isChecked) ContextCompat.getColor(baseContext, R.color.black)
+                    else ContextCompat.getColor(baseContext, R.color.gray)
+                )
             }
         }
 
         binding.apply {
             btnDetectVcut.setOnCheckedChangeListener { buttonView, isChecked ->
-                if (isChecked) {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.red))
-                    vcutDetectorEnabled = true
-                } else {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
-                    vcutDetectorEnabled = false
-                }
+                vcutDetectorEnabled = isChecked
+                buttonView.setBackgroundColor(
+                    if (isChecked) ContextCompat.getColor(baseContext, R.color.red)
+                    else ContextCompat.getColor(baseContext, R.color.gray)
+                )
             }
         }
 
         binding.apply {
             btnDecrement.setOnClickListener {
                 if (confidence_threshold > 0.05) {
-                    confidence_threshold = confidence_threshold - 0.05
+                    confidence_threshold -= 0.05
                     tvConfidence.text = "Confidence\nthreshold\n" + String.format("%.2f", confidence_threshold)
                 }
             }
@@ -128,7 +132,7 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
         binding.apply {
             btnIncrement.setOnClickListener {
                 if (confidence_threshold < 1.0) {
-                    confidence_threshold = confidence_threshold + 0.05
+                    confidence_threshold += 0.05
                     tvConfidence.text = "Confidence\nthreshold\n" + String.format("%.2f", confidence_threshold)
                 }
             }
@@ -136,38 +140,32 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
 
         binding.apply {
             btnShowConf.setOnCheckedChangeListener { buttonView, isChecked ->
-                if (isChecked) {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.black))
-                    show_conf = true
-                } else {
-                    buttonView.setBackgroundColor(ContextCompat.getColor(baseContext, R.color.gray))
-                    show_conf = false
-                }
+                show_conf = isChecked
+                buttonView.setBackgroundColor(
+                    if (isChecked) ContextCompat.getColor(baseContext, R.color.black)
+                    else ContextCompat.getColor(baseContext, R.color.gray)
+                )
             }
         }
-
     }
-
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
-            cameraProvider  = cameraProviderFuture.get()
+            cameraProvider = cameraProviderFuture.get()
             bindCameraUseCases()
         }, ContextCompat.getMainExecutor(this))
     }
 
     private fun bindCameraUseCases() {
         val cameraProvider = cameraProvider ?: throw IllegalStateException("Camera initialization failed.")
-
         val rotation = binding.viewFinder.display.rotation
 
-        val cameraSelector = CameraSelector
-            .Builder()
+        val cameraSelector = CameraSelector.Builder()
             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
             .build()
 
-        preview =  Preview.Builder()
+        preview = Preview.Builder()
             .setTargetAspectRatio(AspectRatio.RATIO_4_3)
             .setTargetRotation(rotation)
             .build()
@@ -180,48 +178,32 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
             .build()
 
         imageAnalyzer?.setAnalyzer(cameraExecutor) { imageProxy ->
-            val bitmapBuffer =
-                Bitmap.createBitmap(
-                    imageProxy.width,
-                    imageProxy.height,
-                    Bitmap.Config.ARGB_8888
-                )
+            val bitmapBuffer = Bitmap.createBitmap(
+                imageProxy.width, imageProxy.height, Bitmap.Config.ARGB_8888
+            )
             imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
             imageProxy.close()
 
             val matrix = Matrix().apply {
                 postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
-
                 if (isFrontCamera) {
-                    postScale(
-                        -1f,
-                        1f,
-                        imageProxy.width.toFloat(),
-                        imageProxy.height.toFloat()
-                    )
+                    postScale(-1f, 1f, imageProxy.width.toFloat(), imageProxy.height.toFloat())
                 }
             }
 
             val rotatedBitmap = Bitmap.createBitmap(
-                bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height,
-                matrix, true
+                bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height, matrix, true
             )
 
+            lastBitmap = rotatedBitmap
             detector?.detect(rotatedBitmap)
         }
 
         cameraProvider.unbindAll()
-
         try {
-            camera = cameraProvider.bindToLifecycle(
-                this,
-                cameraSelector,
-                preview,
-                imageAnalyzer
-            )
-
+            camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
             preview?.surfaceProvider = binding.viewFinder.surfaceProvider
-        } catch(exc: Exception) {
+        } catch (exc: Exception) {
             Log.e(TAG, "Use case binding failed", exc)
         }
     }
@@ -231,8 +213,16 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
     }
 
     private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()) {
-        if (it[Manifest.permission.CAMERA] == true) { startCamera() }
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        if (it[Manifest.permission.CAMERA] == true) {
+            startCamera()
+        }
+        if (it[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            it[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        ) {
+            locationHelper.startLocationUpdates()
+        }
     }
 
     private fun toast(message: String) {
@@ -249,8 +239,9 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
 
     override fun onResume() {
         super.onResume()
-        if (allPermissionsGranted()){
+        if (allPermissionsGranted()) {
             startCamera()
+            locationHelper.startLocationUpdates()
         } else {
             requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
         }
@@ -259,8 +250,10 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
     companion object {
         private const val TAG = "Camera"
         private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = mutableListOf (
-            Manifest.permission.CAMERA
+        private val REQUIRED_PERMISSIONS = mutableListOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
         ).toTypedArray()
     }
 
@@ -271,6 +264,23 @@ class MainActivity : AppCompatActivity(), Detector.DetectorListener {
     }
 
     override fun onDetect(boundingBoxes: List<BoundingBox>, inferenceTime: Long) {
+        val now = System.currentTimeMillis()
+
+        if (boundingBoxes.isNotEmpty() && (now - lastLogTime) > LOG_INTERVAL_MS) {
+            lastLogTime = now
+            val currentBitmap = lastBitmap
+            if (currentBitmap != null) {
+                cameraExecutor.execute {
+                    detectionLogger.logDetections(
+                        boundingBoxes = boundingBoxes,
+                        bitmap = currentBitmap,
+                        latitude = locationHelper.getLatitude(),
+                        longitude = locationHelper.getLongitude()
+                    )
+                }
+            }
+        }
+
         runOnUiThread {
             binding.inferenceTime.text = "inference time: ${inferenceTime}ms"
             binding.overlay.apply {
