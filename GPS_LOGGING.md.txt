@@ -1,0 +1,26 @@
+# GPS Logging Feature
+
+This fork adds automatic GPS coordinate logging and photo capture to the CRB Damage Detection app.
+
+## New Features
+
+- **Auto-save detections**: Every detection above confidence threshold is logged with timestamp, GPS coordinates, label, and confidence score
+- **Photo capture**: Saves a photo for each logged detection
+- **CSV export**: Data saved to `Documents/CRB-detections/crb_detections_YYYY-MM-DD.csv`
+- **3-second throttle**: Prevents duplicate logging from the same palm
+
+## Files Added/Modified
+
+- `DetectionLogger.kt` - Handles CSV and photo saving
+- `LocationHelper.kt` - GPS location services
+- `MainActivity.kt` - Integrated logging into detection flow
+- `AndroidManifest.xml` - Added location permissions
+- `build.gradle.kts` - Added Google Play Services Location dependency
+
+## Data Format
+
+CSV columns: `timestamp, latitude, longitude, label, confidence, photo_path`
+
+## Visualization
+
+Use `csv_to_kml.py` to convert CSV to KML for Google Earth visualization.
